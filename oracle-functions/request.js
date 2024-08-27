@@ -11,12 +11,12 @@ const {
   deleteGist,
   FulfillmentCode,
 } = require("@chainlink/functions-toolkit");
-const functionsConsumerAbi = require("../../abi/functionsClient.json");
+const functionsConsumerAbi = require("../abi/functionsClient.json");
 const ethers = require("ethers");
 require("@chainlink/env-enc").config();
 
-const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9"; // REPLACE this with your Functions consumer address
-const subscriptionId = 3; // REPLACE this with your subscription ID
+const consumerAddress = "0x5b85f8760f1795329ec46e84d5a1ba8eec7fa3ef"; // REPLACE this with your Functions consumer address
+const subscriptionId = 3396; // REPLACE this with your subscription ID
 
 const makeRequestSepolia = async () => {
   // hardcoded for Ethereum Sepolia
@@ -30,8 +30,8 @@ const makeRequestSepolia = async () => {
     .readFileSync(path.resolve(__dirname, "source.js"))
     .toString();
 
-  const args = ["1", "USD"];
-  const secrets = { apiKey: process.env.COINMARKETCAP_API_KEY };
+  const args = ["498631"];
+  const secrets = { apiKey: process.env.FOOTBALL_DATA_ORG_API_KEY };
   const gasLimit = 300000;
 
   // Initialize ethers signer and provider to interact with the contracts onchain
@@ -222,10 +222,12 @@ const makeRequestSepolia = async () => {
         if (ethers.utils.arrayify(responseBytesHexstring).length > 0) {
           const decodedResponse = decodeResult(
             response.responseBytesHexstring,
-            ReturnType.uint256
+            ReturnType.string
+            // ReturnType.uint256
           );
           console.log(
-            `\n✅ Decoded response to ${ReturnType.uint256}: `,
+            `\n✅ Decoded response to ${ReturnType.string}: `,
+            // `\n✅ Decoded response to ${ReturnType.uint256}: `,
             decodedResponse
           );
           // Delete gistURL - not needed anymore
