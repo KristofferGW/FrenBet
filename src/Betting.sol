@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.19;
 
-// ERC-20 Interface to interact with USDC
-interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256); 
-}
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Betting {
     struct Bet {
@@ -16,38 +12,30 @@ contract Betting {
     struct BetSlip {
         address better;
         uint256 betSlipId;
-        uint256 groupId;
         Bet[] bets;
+        uint256 groupId;
+        uint256 score;
     }
 
     struct Group {
+        uint256 balance;
         uint256 groupId;
-        uint256 totalBetAmount; // Total USDC amount associated with this group
-        uint256[] betSlips; // List of bet slip IDs in this group
+        bool settled;
     }
 
     uint256 public betSlipCounter;
     uint256 public groupCounter;
-    mapping(uint256 => BetSlip) public betSlips;
+    mapping(uint256 => BetSlip) public betSlips; // Mapping to store bet slips by their unique ID
+    mapping(uint256 => Group) public groups; // Mapping to store groups by their unique ID
     mapping(address => uint256[]) public userBetSlips; // Mapping to store bet slip IDs by user address
-    mapping(uint256 => Group) public groups; // Mapping to store groups by group ID
-
     IERC20 public usdcToken; // USDC token contract
-    uint256 public constant BET_COST = 10 * 10 ** 6; // 10 USDC with 6 decimal places (assuming USDC has 6 decimals)
 
-    event BetSlipCreated(address indexed better, uint256 indexed betSlipId, uint256 indexed groupId);
-    event GroupCreated(uint256 indexed groupId);
+    event BetSlipCreated(address indexed better, uint256 indexed betSlipId);
+    event GroupSettled(uint256 indexed groupId);
 
     // Constructor to set the USDC token contract address
     constructor(address _usdcTokenAddress) {
         usdcToken = IERC20(_usdcTokenAddress);
-    }
-
-    function createGroup() public returns (uint256) {
-        Group storage newGroup = groups[groupCounter];
-        newGroup.groupId = groupCounter;
-        emit GroupCreated(groupCounter);
-        return groupCounter++;
     }
 
     // Function to create a new bet slip and associate it with a group
@@ -60,7 +48,7 @@ contract Betting {
         require(success, "USDC transfer failed");
 
         // Create a new BetSlip
-        BetSlip storage newBetSlip = betSlips[betSlipCounter]; // what's happening here?
+        BetSlip storage newBetSlip = betSlips[betSlipCounter];
         newBetSlip.better = msg.sender;
         newBetSlip.betSlipId = betSlipCounter;
         newBetSlip.groupId = groupId;
@@ -83,6 +71,13 @@ contract Betting {
         emit BetSlipCreated(msg.sender, betSlipCounter, groupId);
 
         betSlipCounter++;
+    }
+
+    function createGroup() internal {
+        Group storage newGroup = groups[groupCounter];
+        newGroup.groupId = groupCounter;
+        newGroup.settled = false;
+        return newGroup;
     }
 
     // Function to get bet slips of a user
