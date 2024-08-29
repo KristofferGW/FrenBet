@@ -9,36 +9,27 @@ contract Betting {
     FunctionsConsumer public functionsConsumer;
 
     struct Bet {
+        address better;
+        uint256 groupId;
         uint256 matchId;
         string predictedOutcome;
     }
 
-    struct BetSlip {
-        address better;
-        uint256 betSlipId;
-        Bet[] bets;
-        uint256 groupId;
-        uint256 score;
-    }
-
     struct Group {
         uint256 balance;
-        BetSlip[] betSlips;
+        Bet[] bets;
         uint256 groupId;
         bool settled;
     }
 
     uint256 constant BET_COST = 10; 
-    uint256 public betSlipCounter;
     uint256 public groupCounter;
-    mapping(uint256 => BetSlip) public betSlips; // Mapping to store bet slips by their unique ID
-    mapping(uint256 => uint256[]) public betSlipsByGroup; // Mapping to store bet slips by groupId
+    mapping(uint256 => Bet[]) public bets; // Mapping to store Bets by groupId
     mapping(uint256 => Group) public groups; // Mapping to store groups by their unique ID
     mapping(uint256 => string) public matchResults; // Mapping match results to match ID
     mapping(address => uint256[]) public userBetSlips; // Mapping to store bet slip IDs by user address
     IERC20 public usdcToken; // USDC token contract
 
-    event BetSlipCreated(address indexed better, uint256 indexed betSlipId);
     event GroupSettled(uint256 indexed groupId);
 
     // Constructor to set the USDC token contract address
@@ -48,7 +39,7 @@ contract Betting {
     }
 
     // Function to create a new bet slip and associate it with a group
-    function createBetSlip(uint256 groupId, uint256[] memory matchIds, string[] memory predictedOutcomes) public {
+    function placeBets(uint256 groupId, uint256[] memory matchIds, string[] memory predictedOutcomes) public {
         require(matchIds.length == predictedOutcomes.length, "Mismatched inputs");
         require(groups[groupId].groupId == groupId, "Invalid group ID");
         require(usdcToken.balanceOf(msg.sender) >= BET_COST, "Insufficient USDC balance");
@@ -65,6 +56,7 @@ contract Betting {
         // Populate the bets array in the BetSlip struct
         for (uint256 i; i < matchIds.length; i++) {
             newBetSlip.bets.push(Bet({
+                groupId: groupId,
                 matchId: matchIds[i],
                 predictedOutcome: predictedOutcomes[i]
             }));
@@ -72,7 +64,7 @@ contract Betting {
 
         // Store the bet slip ID in the user's record and the group
         userBetSlips[msg.sender].push(betSlipCounter);
-        betSlipsByGroup[groupId].push(betSlipCounter);
+        bets[groupId].push(betSlipCounter);
 
         // Update the group's total bet amount
         groups[groupId].balance += BET_COST;
@@ -85,8 +77,11 @@ contract Betting {
     function createGroup() internal {
         Group storage newGroup = groups[groupCounter];
         newGroup.groupId = groupCounter;
-        newGroup.settled = false;
         groupCounter++;
+    }
+
+    function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) public {
+
     }
 
     // Function to get bet slips of a user
@@ -130,7 +125,7 @@ contract Betting {
     }
 
     function settleGroup(uint256 groupId) public {
-        uint256[] memory betSlipIds = betSlipsByGroup[groupId];
+        uint256[] memory betSlipIds = bets[groupId];
 
         for (uint256 i = 0; i < betSlipIds.bets.length; i++) {
             uint256 matchId = betSlipIds[i];
