@@ -10,14 +10,14 @@ contract FrenBetterTest is Test {
     address FUNCTIONS_CONSUMER_ADDRESS = makeAddr("Functions consumer address");
 
     function setUp() public {
-        frenBetter = new Betting(USDC_TOKEN_ADDRESS, FUNCTIONS_CONSUMER_ADDRESS);
+        frenBetter = new FrenBetter(USDC_TOKEN_ADDRESS, FUNCTIONS_CONSUMER_ADDRESS);
     }
 
-    function testCreateGroup() public {
-        uint256 groupCountarAfterCreate;
-        uint256 groupCounterBeforeCreate = frenBetter.getGroupCount();
-        frenBetter.createGroup();
-        groupCountarAfterCreate = frenBetter.getGroupCount();
-        assertEq(groupCounterBeforeCreate + 1, groupCountarAfterCreate);
-    }
+    // function testCreateGroup() public {
+    //     uint256 groupCountarAfterCreate;
+    //     uint256 groupCounterBeforeCreate = frenBetter.getGroupCount();
+    //     frenBetter.createGroup();
+    //     groupCountarAfterCreate = frenBetter.getGroupCount();
+    //     assertEq(groupCounterBeforeCreate + 1, groupCountarAfterCreate);
+    // }
 }

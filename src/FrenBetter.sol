@@ -34,7 +34,7 @@ contract FrenBetter is Groups {
     }
 
     // Function to create a new bet slip and associate it with a group
-    function placeBets(uint256 groupId, uint256[] memory matchIds, string[] memory predictedOutcomes) public {
+    function placeBets(uint256 groupId, uint256[] calldata matchIds, string[] calldata predictedOutcomes) public {
         require(matchIds.length == predictedOutcomes.length, "Mismatched inputs");
         require(groups[groupId].groupId == groupId, "Invalid group ID");
         require(usdcToken.balanceOf(msg.sender) >= BET_COST, "Insufficient USDC balance");
@@ -43,26 +43,20 @@ contract FrenBetter is Groups {
         require(success, "USDC transfer failed");
 
         for (uint256 i; i < matchIds.length; i++) {
-            Bet newBet = new Bet({
+            Bet memory newBet = Bet({
                 betId: betCounter,
                 better: msg.sender,
-                groupId: groupCounter,
+                groupId: groupId,
                 matchId: matchIds[i],
                 predictedOutcome: predictedOutcomes[i]
             });
+            betsByGroupId[groupId].push(newBet);
+            betsByAddress[msg.sender].push(betCounter);
             betCounter++;
         }
 
-        // Store the bet slip ID in the user's record and the group
-        userBetSlips[msg.sender].push(betSlipCounter);
-        bets[groupId].push(betSlipCounter);
-
         // Update the group's total bet amount
         groups[groupId].balance += BET_COST;
-
-        emit BetSlipCreated(msg.sender, betSlipCounter);
-
-        betSlipCounter++;
     }
 
     // function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) public {
