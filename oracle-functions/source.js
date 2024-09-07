@@ -2,7 +2,7 @@
 // https://coinmarketcap.com/api/documentation/v1/
 
 // Arguments can be provided when a request is initated on-chain and used in the request source code as shown below
-const matchId = args[0];
+const competitionCode = args[0];
 
 if (!secrets.apiKey) {
   throw Error(
@@ -13,7 +13,7 @@ if (!secrets.apiKey) {
 // build HTTP request object
 
 const footballDataOrgRequest = Functions.makeHttpRequest({
-  url: `http://api.football-data.org/v4/matches/${matchId}`,
+  url: `http://api.football-data.org/v4/competitions/${competitionCode}/matches`,
   // Get a free API key from https://coinmarketcap.com/api/
   headers: {
     "Content-Type": "application/json",
@@ -32,20 +32,38 @@ if (footballDataOrgResponse.error) {
 }
 
 //fetch match result
-const matchResult = footballDataOrgResponse.data["score"]["winner"];
-// const matchResult = footballDataOrgResponse.data.score.winner;
+const response = footballDataOrgResponse.data;
 
-// fetch the price
-// const price =
-//   coinMarketCapResponse.data.data[coinMarketCapCoinId]["quote"][currencyCode][
-//     "price"
-//   ];
+const matches = response.matches; 
+const matchResults = [];
 
-console.log(`Winner of the game was ${matchResult}`);
+matches.forEach(match => {
+  if (match.status === "FINISHED") {
+    let winnerCode;
 
-console.log("Functions.encodeString: ", Functions.encodeString(matchResult));
+    switch (match.score.winner) {
+      case "HOME_TEAM":
+        winnerCode = "h";
+        break;
+      case "DRAW":
+        winnerCode = "d";
+        break;
+      case "AWAY_TEAM":
+        winnerCode = "a";
+        break;
+    }
+    
+    if (matchResults.length < 16) {
+      matchResults.push({m: match.id, w: winnerCode});
+    }
+  }
+});
+
+console.log(`MathIds and results: ${JSON.stringify(matchResults)}`);
+
+// console.log("Functions.encodeString: ", Functions.encodeString(matchResults));
 
 // price * 100 to move by 2 decimals (Solidity doesn't support decimals)
 // Math.round() to round to the nearest integer
 // Functions.encodeUint256() helper function to encode the result from uint256 to bytes
-return Functions.encodeString(matchResult);
+return Functions.encodeString(matchResults);

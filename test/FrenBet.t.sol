@@ -77,7 +77,7 @@ contract FrenBetTest is Test {
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
     }
 
-    function testFailedUSDTransfer() public {
+    function testFailedUSDCTransfer() public {
         // Arrange
         vm.prank(USER1);
         fakeUSDC.approve(address(frenBet), 0);

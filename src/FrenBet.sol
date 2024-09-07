@@ -70,23 +70,6 @@ contract FrenBet is Groups {
     }
 
     function settleBets(uint256 groupId) public {
-        // Find all match ids of group
-        Bet[] memory betsToBeSettled = betsByGroupId[groupId];
-        uint256[] memory matchIdsToBeSettled = new uint256[](betsToBeSettled.length);
-
-        for (uint256 i = 0; i < betsToBeSettled.length; i++) {
-            matchIdsToBeSettled[i] = betsToBeSettled[i].matchId;
-
-            string memory source = ""; // Placeholder for javascript source
-            bytes memory encryptedSecretsUrls = ""; // Placeholder: Insert actual encrypted secrets URLs
-            uint8 donHostedSecretsSlotID = 0; // Example value
-            uint64 donHostedSecretsVersion = 0; // Example value
-        }
-
-        // Fetch results of each match
-
-        // Calculate winners
-
-        // Distribute winnings
+        // 
     }
 }
