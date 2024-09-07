@@ -53,9 +53,9 @@ matches.forEach(match => {
         break;
     }
     
-    if (matchResults.length < 16) {
-      matchResults.push({m: match.id, w: winnerCode});
-    }
+    // if (matchResults.length < 29) {
+      matchResults.push(winnerCode);
+    // }
   }
 });
 
