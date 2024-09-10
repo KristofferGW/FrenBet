@@ -70,6 +70,6 @@ contract FrenBet is Groups {
     }
 
     function settleBets(uint256 groupId) public {
-        // 
+        
     }
 }
