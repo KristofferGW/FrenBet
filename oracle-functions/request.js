@@ -15,7 +15,7 @@ const functionsConsumerAbi = require("../abi/functionsClient.json");
 const ethers = require("ethers");
 require("@chainlink/env-enc").config();
 
-const consumerAddress = "0x5b85f8760f1795329ec46e84d5a1ba8eec7fa3ef"; // REPLACE this with your Functions consumer address
+const consumerAddress = "0x0a3E192919471c41CaBCBaAc2Bb35F72EadD02aE"; // REPLACE this with your Functions consumer address
 const subscriptionId = 3396; // REPLACE this with your subscription ID
 
 const makeRequestSepolia = async () => {
@@ -30,7 +30,7 @@ const makeRequestSepolia = async () => {
     .readFileSync(path.resolve(__dirname, "source.js"))
     .toString();
 
-  const args = ["498631"];
+  const args = ["PD"];
   const secrets = { apiKey: process.env.FOOTBALL_DATA_ORG_API_KEY };
   const gasLimit = 300000;
 
@@ -67,7 +67,7 @@ const makeRequestSepolia = async () => {
   if (errorString) {
     console.log(`❌ Error during simulation: `, errorString);
   } else {
-    const returnType = ReturnType.uint256;
+    const returnType = ReturnType.string;
     const responseBytesHexstring = response.responseBytesHexstring;
     if (ethers.utils.arrayify(responseBytesHexstring).length > 0) {
       const decodedResponse = decodeResult(
@@ -183,6 +183,8 @@ const makeRequestSepolia = async () => {
           });
       });
 
+      console.log("Here is the response from the functions consumer: ", response);
+
       const fulfillmentCode = response.fulfillmentCode;
 
       if (fulfillmentCode === FulfillmentCode.FULFILLED) {
@@ -223,11 +225,11 @@ const makeRequestSepolia = async () => {
           const decodedResponse = decodeResult(
             response.responseBytesHexstring,
             ReturnType.string
-            // ReturnType.uint256
+            // ReturnType.string
           );
           console.log(
             `\n✅ Decoded response to ${ReturnType.string}: `,
-            // `\n✅ Decoded response to ${ReturnType.uint256}: `,
+            // `\n✅ Decoded response to ${ReturnType.string}: `,
             decodedResponse
           );
           // Delete gistURL - not needed anymore
