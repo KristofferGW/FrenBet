@@ -17,6 +17,8 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
     bytes public s_lastResponse;
     bytes public s_lastError;
 
+    mapping(uint256 => bytes) savedResponsesByGroupId;
+
     error UnexpectedRequestID(bytes32 requestId);
 
     event Response(bytes32 indexed requestId, bytes response, bytes err);

@@ -1,5 +1,4 @@
 const fs = require("fs");
-const LZString = require("lz-string");
 const path = require("path");
 const {
   SubscriptionManager,
