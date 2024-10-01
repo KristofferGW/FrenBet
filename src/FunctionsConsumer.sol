@@ -17,7 +17,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
     bytes public s_lastResponse;
     bytes public s_lastError;
 
-    mapping(uint256 => bytes) savedResponsesByGroupId;
+    mapping(bytes32 => bytes) savedResponsesByRequestId;
 
     error UnexpectedRequestID(bytes32 requestId);
 
@@ -109,6 +109,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
         }
         s_lastResponse = response;
         s_lastError = err;
+        savedResponsesByRequestId[requestId] = s_lastResponse;
         emit Response(requestId, s_lastResponse, s_lastError);
     }
 }
