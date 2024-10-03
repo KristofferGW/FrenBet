@@ -8,6 +8,11 @@ import {FunctionsConsumer} from "./FunctionsConsumer.sol";
 import {Groups} from "./Groups.sol";
 
 contract FrenBet is Groups {
+    error FrenBet__InsufficientUsdc();
+    error FrenBet__InvalidGroupId();
+    error FrenBet__MismatchedInputs();
+    error FrenBet__UsdcTransferFailed();
+
     FunctionsConsumer public functionsConsumer;
 
     struct Bet {
@@ -44,12 +49,12 @@ contract FrenBet is Groups {
 
     // Function to create a new bet slip and associate it with a group
     function placeBets(uint256 groupId, uint256[] calldata matchIds, string[] calldata predictedOutcomes) public {
-        require(matchIds.length == predictedOutcomes.length, "Mismatched inputs");
-        require(groups[groupId].groupId == groupId, "Invalid group ID");
-        require(usdcToken.balanceOf(msg.sender) >= BET_COST, "Insufficient USDC balance");
+        if (matchIds.length != predictedOutcomes.length) revert FrenBet__MismatchedInputs();
+        if (groups[groupId].groupId != groupId) revert FrenBet__InvalidGroupId();
+        if (usdcToken.balanceOf(msg.sender) < BET_COST) revert FrenBet__InsufficientUsdc();
 
         bool success = usdcToken.transferFrom(msg.sender, address(this), BET_COST);
-        require(success, "USDC transfer failed");
+        if (!success) revert FrenBet__UsdcTransferFailed();
 
         for (uint256 i; i < matchIds.length; i++) {
             Bet memory newBet = Bet({
