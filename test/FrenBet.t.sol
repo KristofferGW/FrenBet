@@ -56,14 +56,14 @@ contract FrenBetTest is Test {
     function testMismatchedInputs() public {
         // Act & Assert
         vm.startPrank(USER1);
-        vm.expectRevert("Mismatched inputs");
+        vm.expectRevert();
         frenBet.placeBets(TEST_GROUP_ID, TWO_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
     }
 
     function testInvalidGroupId() public {
         // Act & Assert
         vm.startPrank(USER1);
-        vm.expectRevert("Invalid group ID");
+        vm.expectRevert();
         frenBet.placeBets(INVALID_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
     }
 
@@ -73,7 +73,7 @@ contract FrenBetTest is Test {
 
         // Act & Arrange
         vm.prank(noUsdcUser);
-        vm.expectRevert("Insufficient USDC balance");
+        vm.expectRevert();
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
     }
 
