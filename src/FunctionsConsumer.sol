@@ -49,6 +49,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
         bytes32 donID
     ) external onlyOwner returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
+        string memory groupId;
         req.initializeRequestForInlineJavaScript(source);
         if (encryptedSecretsUrls.length > 0)
             req.addSecretsReference(encryptedSecretsUrls);
@@ -58,7 +59,14 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
                 donHostedSecretsVersion
             );
         }
-        if (args.length > 0) req.setArgs(args);
+        if (args.length > 0) {
+          groupId = args[1];
+
+          string[] memory competitions = new string[](args.length - 1);
+          competitions[0] = args[0];
+
+          req.setArgs(competitions);  
+        }
         if (bytesArgs.length > 0) req.setBytesArgs(bytesArgs);
         s_lastRequestId = _sendRequest(
             req.encodeCBOR(),

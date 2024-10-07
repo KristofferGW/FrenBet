@@ -30,7 +30,7 @@ const makeRequestSepolia = async () => {
     .readFileSync(path.resolve(__dirname, "source.js"))
     .toString();
 
-  const args = ["PD"];
+  const args = ["PD", "1"];
   const secrets = { apiKey: process.env.FOOTBALL_DATA_ORG_API_KEY };
   const gasLimit = 300000;
 
