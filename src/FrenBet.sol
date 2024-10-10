@@ -8,21 +8,16 @@ import {FunctionsConsumer} from "./FunctionsConsumer.sol";
 import {Groups} from "./Groups.sol";
 
 contract FrenBet is Groups {
+    /* Errors */
     error FrenBet__InsufficientUsdc();
     error FrenBet__InvalidGroupId();
     error FrenBet__MismatchedInputs();
     error FrenBet__UsdcTransferFailed();
 
+    /* Contracts */
     FunctionsConsumer public functionsConsumer;
 
-    struct Bet {
-        uint256 betId;
-        address better;
-        uint256 groupId;
-        uint256 matchId;
-        string predictedOutcome;
-    }
-
+    /* Type declarations */
     uint256 constant BET_COST = 10; 
     uint256 betCounter;
     mapping(uint256 => Bet) public betById;
@@ -31,20 +26,22 @@ contract FrenBet is Groups {
     mapping(address => Bet[]) public betsByAddress; // Mapping to store bets by user address
     IERC20 public usdcToken; // USDC token contract
 
+    /* Structs */
+    struct Bet {
+        uint256 betId;
+        address better;
+        uint256 groupId;
+        uint256 matchId;
+        string predictedOutcome;
+    }
+
+    /* Events */
     event GroupSettled(uint256 indexed groupId);
 
     // Constructor to set the USDC token contract address
     constructor(address _usdcTokenAddress, address _functionsConsumerAddress) {
         usdcToken = IERC20(_usdcTokenAddress);
         functionsConsumer = FunctionsConsumer(_functionsConsumerAddress);
-    }
-
-    function getBetById(uint256 betId) public view returns (Bet memory) {
-        return betById[betId];
-    }
-
-    function getBetsByAddress(address user) public view returns (Bet[] memory) {
-        return betsByAddress[user];
     }
 
     // Function to create a new bet slip and associate it with a group
@@ -74,7 +71,13 @@ contract FrenBet is Groups {
         groups[groupId].balance += BET_COST;
     }
 
-    function settleBets(uint256 groupId) public {
-        
+    function settleBets(uint256 groupId) public {}
+
+    function getBetById(uint256 betId) public view returns (Bet memory) {
+        return betById[betId];
+    }
+
+    function getBetsByAddress(address user) public view returns (Bet[] memory) {
+        return betsByAddress[user];
     }
 }

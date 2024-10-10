@@ -2,14 +2,14 @@
 pragma solidity ^0.8.25;
 
 contract Groups {
+    uint256 public groupCounter;
+
     struct Group {
         uint256 balance;
         uint256[] betIds;
         uint256 groupId;
         bool settled;
     }
-
-    uint256 public groupCounter;
 
     mapping(uint256 => Group) public groups; // Mapping to store groups by their unique ID
 

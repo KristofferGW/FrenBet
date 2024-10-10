@@ -12,7 +12,7 @@ contract Converters {
         bytes memory b = bytes(s);
         uint256 result = 0;
         for (uint256 i = 0; i < b.length; i++) {
-            if(!(b[i] >= 0x30 && b[i] <= 0x39)) revert Converters__InvalidCharacterInString();
+            if (!(b[i] >= 0x30 && b[i] <= 0x39)) revert Converters__InvalidCharacterInString();
             result = result * 10 + (uint256(uint8(b[i])) - 48);
         }
         return result;
