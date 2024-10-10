@@ -36,6 +36,7 @@ contract FrenBet is Groups {
     }
 
     /* Events */
+    event BetSlipCreated(address indexed better, uint256 indexed groupId);
     event GroupSettled(uint256 indexed groupId);
 
     // Constructor to set the USDC token contract address
@@ -69,6 +70,8 @@ contract FrenBet is Groups {
 
         // Update the group's total bet amount
         groups[groupId].balance += BET_COST;
+
+        emit BetSlipCreated(msg.sender, groupId);
     }
 
     function settleBets(uint256 groupId) public {}
