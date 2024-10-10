@@ -13,10 +13,13 @@ contract Groups {
 
     mapping(uint256 => Group) public groups; // Mapping to store groups by their unique ID
 
+    event GroupCreated(uint256 indexed groupId);
+
     function createGroup() public {
         Group storage newGroup = groups[groupCounter];
         newGroup.groupId = groupCounter;
         groupCounter++;
+        emit GroupCreated(newGroup.groupId);
     }
 
     function getGroupById(uint256 groupId) public view returns (Group memory) {
