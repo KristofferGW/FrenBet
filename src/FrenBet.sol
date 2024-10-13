@@ -3,7 +3,7 @@ pragma solidity ^0.8.25;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-
+import {Converters} from "./Converters.sol";
 import {FunctionsConsumer} from "./FunctionsConsumer.sol";
 import {Groups} from "./Groups.sol";
 
@@ -18,7 +18,7 @@ contract FrenBet is Groups {
     FunctionsConsumer public functionsConsumer;
 
     /* Type declarations */
-    uint256 constant BET_COST = 10; 
+    uint256 constant BET_COST = 10;
     uint256 betCounter;
     mapping(uint256 => Bet) public betById;
     mapping(uint256 => Bet[]) public betsByGroupId; // Mapping to store Bets by groupId
@@ -75,7 +75,20 @@ contract FrenBet is Groups {
     }
 
     function settleBets(uint256 groupId) public {
+        bytes bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
+        string stringResponse = Converters.bytesToString(bytesResponse);
+
+        // Nested mapping to store predictions of each better, organized by matchId
+        mapping(address => string[]) memory predictionsByBetter;
         
+        // Fetch the bets for the given groupId
+        Bet[] memory bets = betsByGroupId[groupId];
+
+        // Iterate through the predictions and organize them by better
+        for (uint256 i = 0; i < bets.length; i++) {
+            Bet memory bet = bets[i];
+            predictionsByBetter[bet.better].push(bet.predictedOutcome);
+        }
     }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
