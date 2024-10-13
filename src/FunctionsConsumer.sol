@@ -101,9 +101,9 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, Converters {
         }
         // s_lastResponse = response;
         s_lastError = err;
-        savedResponsesByRequestId[requestId] = s_lastResponse;
-        emit Response(requestId, response, s_lastError);
+        savedResponsesByRequestId[requestId] = response;
         // emit Response(requestId, s_lastResponse, s_lastError);
+        emit Response(requestId, response, s_lastError);
     }
 
     function getResponseByGroupId(uint256 groupId) public view returns (bytes memory) {
