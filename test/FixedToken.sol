@@ -19,19 +19,13 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  *  - No minting function. This allows users to comfortably know the future supply of the token.
  *
  */
-
 contract FixedToken is ERC20 {
     /**
      * @param name Token Name
      * @param symbol Token Symbol
      * @param totalSupply Token Supply
      */
-    constructor(
-        string memory name,
-        string memory symbol,
-        uint256 totalSupply
-    ) payable ERC20(name, symbol) {
+    constructor(string memory name, string memory symbol, uint256 totalSupply) payable ERC20(name, symbol) {
         _mint(msg.sender, totalSupply);
     }
 }
-

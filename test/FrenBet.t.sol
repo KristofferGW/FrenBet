@@ -22,12 +22,11 @@ contract FrenBetTest is Test {
     string[] THREE_PREDICTED_OUTCOMES = ["1", "2", "X"];
     address USER1 = makeAddr("User 1");
 
-
     function setUp() public {
         owner = address(this); // Set the owner as the current contract address
         recipient = USER1;
 
-        fakeUSDC = new FixedToken("Fake USDC", "fUSDC", 1000 * 10**18);
+        fakeUSDC = new FixedToken("Fake USDC", "fUSDC", 1000 * 10 ** 18);
         fakeUSDC.transfer(recipient, APPROVAL_AMOUNT);
         frenBet = new FrenBet(address(fakeUSDC), FUNCTIONS_CONSUMER_ADDRESS);
 
@@ -36,7 +35,6 @@ contract FrenBetTest is Test {
         frenBet.createGroup();
         frenBet.createGroup();
         vm.stopPrank();
-        
     }
 
     function testPlaceBets() public {
@@ -48,7 +46,11 @@ contract FrenBetTest is Test {
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
 
         // Assert
-        assertEq(frenBet.getBetsByAddress(USER1).length, THREE_MATCH_IDS.length, "MatchIds length and bets by address length must match");
+        assertEq(
+            frenBet.getBetsByAddress(USER1).length,
+            THREE_MATCH_IDS.length,
+            "MatchIds length and bets by address length must match"
+        );
         assertEq(fakeUSDC.balanceOf(USER1), balanceOfUserBeforeBet - 10, "User balance should be reduced by BET_COST");
         assertEq(frenBet.getGroupById(TEST_GROUP_ID).balance, 10);
     }

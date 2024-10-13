@@ -4,28 +4,28 @@ pragma solidity ^0.8.25;
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
 import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+import {Converters} from "./Converters.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
-contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
+contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, Converters {
     using FunctionsRequest for FunctionsRequest.Request;
 
     bytes32 public s_lastRequestId;
     bytes public s_lastResponse;
     bytes public s_lastError;
 
+    mapping(uint256 => bytes32) requestIdByGroupId;
     mapping(bytes32 => bytes) savedResponsesByRequestId;
 
     error UnexpectedRequestID(bytes32 requestId);
 
     event Response(bytes32 indexed requestId, bytes response, bytes err);
 
-    constructor(
-        address router
-    ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+    constructor(address router) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
 
     /**
      * @notice Send a simple request
@@ -49,23 +49,25 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
         bytes32 donID
     ) external onlyOwner returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
+        string memory groupId;
         req.initializeRequestForInlineJavaScript(source);
-        if (encryptedSecretsUrls.length > 0)
+        if (encryptedSecretsUrls.length > 0) {
             req.addSecretsReference(encryptedSecretsUrls);
-        else if (donHostedSecretsVersion > 0) {
-            req.addDONHostedSecrets(
-                donHostedSecretsSlotID,
-                donHostedSecretsVersion
-            );
+        } else if (donHostedSecretsVersion > 0) {
+            req.addDONHostedSecrets(donHostedSecretsSlotID, donHostedSecretsVersion);
         }
-        if (args.length > 0) req.setArgs(args);
+        if (args.length > 0) {
+            groupId = args[1];
+
+            string[] memory competitions = new string[](args.length - 1);
+            competitions[0] = args[0];
+
+            req.setArgs(competitions);
+        }
         if (bytesArgs.length > 0) req.setBytesArgs(bytesArgs);
-        s_lastRequestId = _sendRequest(
-            req.encodeCBOR(),
-            subscriptionId,
-            gasLimit,
-            donID
-        );
+        s_lastRequestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donID);
+        uint256 groupIdUint = Converters.stringToUint(groupId);
+        requestIdByGroupId[groupIdUint] = s_lastRequestId;
         return s_lastRequestId;
     }
 
@@ -77,18 +79,12 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
      * @param donID ID of the job to be invoked
      * @return requestId The ID of the sent request
      */
-    function sendRequestCBOR(
-        bytes memory request,
-        uint64 subscriptionId,
-        uint32 gasLimit,
-        bytes32 donID
-    ) external onlyOwner returns (bytes32 requestId) {
-        s_lastRequestId = _sendRequest(
-            request,
-            subscriptionId,
-            gasLimit,
-            donID
-        );
+    function sendRequestCBOR(bytes memory request, uint64 subscriptionId, uint32 gasLimit, bytes32 donID)
+        external
+        onlyOwner
+        returns (bytes32 requestId)
+    {
+        s_lastRequestId = _sendRequest(request, subscriptionId, gasLimit, donID);
         return s_lastRequestId;
     }
 
@@ -99,17 +95,20 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
      * @param err Aggregated error from the user code or from the execution pipeline
      * Either response or error parameter will be set, but never both
      */
-    function fulfillRequest(
-        bytes32 requestId,
-        bytes memory response,
-        bytes memory err
-    ) internal override {
+    function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
         if (s_lastRequestId != requestId) {
             revert UnexpectedRequestID(requestId);
         }
-        s_lastResponse = response;
+        // s_lastResponse = response;
         s_lastError = err;
         savedResponsesByRequestId[requestId] = s_lastResponse;
-        emit Response(requestId, s_lastResponse, s_lastError);
+        emit Response(requestId, response, s_lastError);
+        // emit Response(requestId, s_lastResponse, s_lastError);
+    }
+
+    function getResponseByGroupId(uint256 groupId) public view returns (bytes memory) {
+        bytes32 requestId = requestIdByGroupId[groupId];
+        bytes memory response = savedResponsesByRequestId[requestId];
+        return response;
     }
 }
