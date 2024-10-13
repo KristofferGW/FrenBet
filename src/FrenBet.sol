@@ -74,7 +74,9 @@ contract FrenBet is Groups {
         emit BetSlipCreated(msg.sender, groupId);
     }
 
-    function settleBets(uint256 groupId) public {}
+    function settleBets(uint256 groupId) public {
+        
+    }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
         return betById[betId];
