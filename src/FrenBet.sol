@@ -9,12 +9,16 @@ import {Groups} from "./Groups.sol";
 
 contract FrenBet is Groups {
     /* Errors */
+    error FrenBet__GroupAlreadySettled();
+    error FrenBet__GroupHasNoBalance();
     error FrenBet__InsufficientUsdc();
     error FrenBet__InvalidGroupId();
     error FrenBet__MismatchedInputs();
+    error FrenBet__NoSavedResponseForGroupId();
     error FrenBet__UsdcTransferFailed();
 
     /* Contracts */
+    Converters public converters;
     FunctionsConsumer public functionsConsumer;
 
     /* Type declarations */
@@ -75,20 +79,10 @@ contract FrenBet is Groups {
     }
 
     function settleBets(uint256 groupId) public {
-        bytes bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
-        string stringResponse = Converters.bytesToString(bytesResponse);
-
-        // Nested mapping to store predictions of each better, organized by matchId
-        mapping(address => string[]) memory predictionsByBetter;
-        
-        // Fetch the bets for the given groupId
-        Bet[] memory bets = betsByGroupId[groupId];
-
-        // Iterate through the predictions and organize them by better
-        for (uint256 i = 0; i < bets.length; i++) {
-            Bet memory bet = bets[i];
-            predictionsByBetter[bet.better].push(bet.predictedOutcome);
-        }
+        if (groups[groupId].settled == true) revert FrenBet__GroupAlreadySettled();
+        if (groups[groupId].balance == 0) revert FrenBet__GroupHasNoBalance();
+        bytes memory bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
+        string memory stringResponse = converters.bytesToString(bytesResponse);
     }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
