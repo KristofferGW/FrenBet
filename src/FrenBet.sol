@@ -28,6 +28,7 @@ contract FrenBet is Groups {
     mapping(uint256 => Bet[]) public betsByGroupId; // Mapping to store Bets by groupId
     mapping(uint256 => string) public matchResultsByMatchId; // Mapping match results to match ID
     mapping(address => Bet[]) public betsByAddress; // Mapping to store bets by user address
+    mapping(address => bool) private addressIsUnique; // Used in getUniqueBetters() to find unique addresses
     IERC20 public usdcToken; // USDC token contract
 
     /* Structs */
@@ -83,7 +84,7 @@ contract FrenBet is Groups {
         if (groups[groupId].balance == 0) revert FrenBet__GroupHasNoBalance();
         bytes memory bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
         string memory stringResponse = converters.bytesToString(bytesResponse);
-        // Split stringResponse into a string array
+        string[] memory arrayResponse = converters.splitString(stringResponse);
         Bet[] memory groupBets = betsByGroupId[groupId];
 
         // Extract each unique better from groupBets
@@ -99,5 +100,31 @@ contract FrenBet is Groups {
 
     function getBetsByAddress(address user) public view returns (Bet[] memory) {
         return betsByAddress[user];
+    }
+
+    function getUniqueBetters(uint256 groupId) public returns (address[] memory) {
+        Bet[] memory bets = betsByGroupId[groupId];
+        uint256 betCount = bets.length;
+        uint256 uniqueCount = 0;
+
+        for (uint256 i = 0; i < betCount; i++) {
+            if (!addressIsUnique[bets[i].better]) {
+                addressIsUnique[bets[i].better] = true;
+                uniqueCount++;
+            }
+        }
+
+        address[] memory groupBetters = new address[](uniqueCount);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < betCount; i++) {
+            if (addressIsUnique[bets[i].better]) {
+                groupBetters[index] = bets[i].better;
+                addressIsUnique[bets[i].better] = false;
+                index++;
+            }
+        }
+
+        return groupBetters;
     }
 }
