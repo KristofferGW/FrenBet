@@ -83,6 +83,14 @@ contract FrenBet is Groups {
         if (groups[groupId].balance == 0) revert FrenBet__GroupHasNoBalance();
         bytes memory bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
         string memory stringResponse = converters.bytesToString(bytesResponse);
+        // Split stringResponse into a string array
+        Bet[] memory groupBets = betsByGroupId[groupId];
+
+        // Extract each unique better from groupBets
+
+        // Get all the bets for each address from from the betsByAddress mapping
+
+        // Filter out the bets that corresponds to the given groupId
     }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
