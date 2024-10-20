@@ -29,6 +29,7 @@ contract FrenBet is Groups {
     mapping(uint256 => string) public matchResultsByMatchId; // Mapping match results to match ID
     mapping(address => Bet[]) public betsByAddress; // Mapping to store bets by user address
     mapping(address => bool) private addressIsUnique; // Used in getUniqueBetters() to find unique addresses
+    uint256 uniqueCount = 0;
     IERC20 public usdcToken; // USDC token contract
 
     /* Structs */
@@ -88,6 +89,7 @@ contract FrenBet is Groups {
         Bet[] memory groupBets = betsByGroupId[groupId];
 
         // Extract each unique better from groupBets
+        address[] memory uniqueBetters = getUniqueBetters(groupId);
 
         // Get all the bets for each address from from the betsByAddress mapping
 
@@ -105,7 +107,6 @@ contract FrenBet is Groups {
     function getUniqueBetters(uint256 groupId) public returns (address[] memory) {
         Bet[] memory bets = betsByGroupId[groupId];
         uint256 betCount = bets.length;
-        uint256 uniqueCount = 0;
 
         for (uint256 i = 0; i < betCount; i++) {
             if (!addressIsUnique[bets[i].better]) {
