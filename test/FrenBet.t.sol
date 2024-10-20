@@ -19,15 +19,22 @@ contract FrenBetTest is Test {
     address FUNCTIONS_CONSUMER_ADDRESS = makeAddr("Functions consumer address");
     uint256[] THREE_MATCH_IDS = [3432, 334, 3];
     uint256[] TWO_MATCH_IDS = [3432, 334];
-    string[] THREE_PREDICTED_OUTCOMES = ["1", "2", "X"];
+    string[] PREDICTED_OUTCOUMES_12X = ["1", "2", "X"];
+    string[] PREDICTED_OUTCOUMES_XX1 = ["X", "X", "1"];
+    string[] PREDICTED_OUTCOUMES_1X1 = ["1", "X", "1"];
     address USER1 = makeAddr("User 1");
+    address USER2 = makeAddr("User 2");
+    address USER3 = makeAddr("User 3");
+    address[] THREE_UNIQUE_BETTERS = [USER1, USER2, USER3];
 
     function setUp() public {
         owner = address(this); // Set the owner as the current contract address
-        recipient = USER1;
+        // recipient = USER1;
 
-        fakeUSDC = new FixedToken("Fake USDC", "fUSDC", 1000 * 10 ** 18);
-        fakeUSDC.transfer(recipient, APPROVAL_AMOUNT);
+        fakeUSDC = new FixedToken("Fake USDC", "FUSDC", 1000 * 10 ** 18);
+        fakeUSDC.transfer(USER1, APPROVAL_AMOUNT);
+        fakeUSDC.transfer(USER2, APPROVAL_AMOUNT);
+        fakeUSDC.transfer(USER3, APPROVAL_AMOUNT);
         frenBet = new FrenBet(address(fakeUSDC), FUNCTIONS_CONSUMER_ADDRESS);
 
         vm.startPrank(USER1);
@@ -35,6 +42,29 @@ contract FrenBetTest is Test {
         frenBet.createGroup();
         frenBet.createGroup();
         vm.stopPrank();
+
+        vm.startPrank(USER2);
+        fakeUSDC.approve(address(frenBet), APPROVAL_AMOUNT);
+        vm.stopPrank();
+
+        vm.startPrank(USER3);
+        fakeUSDC.approve(address(frenBet), APPROVAL_AMOUNT);
+        vm.stopPrank();
+    }
+
+    function testGetUniqueBetters() public {
+        // testPlaceBets();
+        // *****************
+        // Arrange
+        vm.startPrank(USER1);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
+        vm.startPrank(USER2);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_XX1);
+        vm.startPrank(USER3);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_1X1);
+        // Act
+        address[] memory result = frenBet.getUniqueBetters(TEST_GROUP_ID);
+        assertEq(THREE_UNIQUE_BETTERS, result);
     }
 
     function testPlaceBets() public {
@@ -43,7 +73,7 @@ contract FrenBetTest is Test {
 
         // Act
         vm.startPrank(USER1);
-        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
 
         // Assert
         assertEq(
@@ -59,14 +89,14 @@ contract FrenBetTest is Test {
         // Act & Assert
         vm.startPrank(USER1);
         vm.expectRevert();
-        frenBet.placeBets(TEST_GROUP_ID, TWO_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
+        frenBet.placeBets(TEST_GROUP_ID, TWO_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
     }
 
     function testInvalidGroupId() public {
         // Act & Assert
         vm.startPrank(USER1);
         vm.expectRevert();
-        frenBet.placeBets(INVALID_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
+        frenBet.placeBets(INVALID_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
     }
 
     function testInsufficientUSDCBalance() public {
@@ -76,7 +106,7 @@ contract FrenBetTest is Test {
         // Act & Arrange
         vm.prank(noUsdcUser);
         vm.expectRevert();
-        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
     }
 
     function testFailedUSDCTransfer() public {
@@ -87,6 +117,6 @@ contract FrenBetTest is Test {
         // Act & Assert
         vm.prank(USER1);
         vm.expectRevert("USDC transfer failed");
-        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, THREE_PREDICTED_OUTCOMES);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
     }
 }
