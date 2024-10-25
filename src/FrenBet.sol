@@ -26,6 +26,7 @@ contract FrenBet is Groups {
     uint256 betCounter;
     mapping(uint256 => Bet) public betById;
     mapping(uint256 => Bet[]) public betsByGroupId; // Mapping to store Bets by groupId
+    mapping(address => Bet[]) private betsByAddressesInGroup; // Used by settleBets()
     mapping(uint256 => string) public matchResultsByMatchId; // Mapping match results to match ID
     mapping(address => Bet[]) public betsByAddress; // Mapping to store bets by user address
     mapping(address => bool) private addressIsUnique; // Used in getUniqueBetters() to find unique addresses
@@ -90,10 +91,23 @@ contract FrenBet is Groups {
 
         // Extract each unique better from groupBets
         address[] memory uniqueBetters = getUniqueBetters(groupId);
+        uint256 betsByAddressesInGroupCounter = 0;
+
 
         // Get all the bets for each address from from the betsByAddress mapping
+        for (uint256 i = 0; i < uniqueBetters.length; i++) {
+            Bet[] memory betsByBetter;
+            betsByBetter = getBetsByAddress(uniqueBetters[i]);
+            betsByAddressesInGroup[uniqueBetters[i]] = betsByBetter;
+            betsByAddressesInGroupCounter++;
+        }
 
         // Filter out the bets that corresponds to the given groupId
+        for (uint256 i = 0; i < betsByAddressesInGroupCounter; i++) {
+
+        }
+
+        // Write unit tests for what you have so far
     }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
