@@ -7,6 +7,7 @@ contract Groups {
     struct Group {
         uint256 balance;
         uint256[] betIds;
+        address[] betters;
         uint256 groupId;
         bool settled;
     }

@@ -19,9 +19,9 @@ contract FrenBetTest is Test {
     address FUNCTIONS_CONSUMER_ADDRESS = makeAddr("Functions consumer address");
     uint256[] THREE_MATCH_IDS = [3432, 334, 3];
     uint256[] TWO_MATCH_IDS = [3432, 334];
-    string[] PREDICTED_OUTCOUMES_12X = ["1", "2", "X"];
-    string[] PREDICTED_OUTCOUMES_XX1 = ["X", "X", "1"];
-    string[] PREDICTED_OUTCOUMES_1X1 = ["1", "X", "1"];
+    string[] PREDICTED_OUTCOUMES_12X = ["h", "a", "d"];
+    string[] PREDICTED_OUTCOUMES_XX1 = ["d", "d", "h"];
+    string[] PREDICTED_OUTCOUMES_1X1 = ["h", "d", "h"];
     address USER1 = makeAddr("User 1");
     address USER2 = makeAddr("User 2");
     address USER3 = makeAddr("User 3");
@@ -50,6 +50,18 @@ contract FrenBetTest is Test {
         vm.startPrank(USER3);
         fakeUSDC.approve(address(frenBet), APPROVAL_AMOUNT);
         vm.stopPrank();
+    }
+
+    function testGetPredictedOutcomesByAddressInGroup() public {
+        //Arrange
+        vm.startPrank(USER1);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
+
+        //Act
+        string[] memory returnedPredictedOutcomes = frenBet.getPredictedOutcomesByAddressInGroup(USER1);
+
+        //Assert
+        assertEq(returnedPredictedOutcomes, PREDICTED_OUTCOUMES_12X);
     }
 
     function testGetUniqueBetters() public {

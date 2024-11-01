@@ -30,6 +30,7 @@ contract FrenBet is Groups {
     mapping(uint256 => string) public matchResultsByMatchId; // Mapping match results to match ID
     mapping(address => Bet[]) public betsByAddress; // Mapping to store bets by user address
     mapping(address => bool) private addressIsUnique; // Used in getUniqueBetters() to find unique addresses
+    mapping(address => string[]) private predictedOutcomesByAddress; // Used by settleBets()
     uint256 uniqueCount = 0;
     IERC20 public usdcToken; // USDC token contract
 
@@ -75,6 +76,7 @@ contract FrenBet is Groups {
             betCounter++;
         }
 
+        groups[groupId].betters.push(msg.sender);
         // Update the group's total bet amount
         groups[groupId].balance += BET_COST;
 
@@ -87,27 +89,8 @@ contract FrenBet is Groups {
         bytes memory bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
         string memory stringResponse = converters.bytesToString(bytesResponse);
         string[] memory arrayResponse = converters.splitString(stringResponse);
-        Bet[] memory groupBets = betsByGroupId[groupId];
 
-        // Extract each unique better from groupBets
         address[] memory uniqueBetters = getUniqueBetters(groupId);
-        uint256 betsByAddressesInGroupCounter = 0;
-
-
-        // Get all the bets for each address from from the betsByAddress mapping
-        for (uint256 i = 0; i < uniqueBetters.length; i++) {
-            Bet[] memory betsByBetter;
-            betsByBetter = getBetsByAddress(uniqueBetters[i]);
-            betsByAddressesInGroup[uniqueBetters[i]] = betsByBetter;
-            betsByAddressesInGroupCounter++;
-        }
-
-        // Filter out the bets that corresponds to the given groupId
-        for (uint256 i = 0; i < betsByAddressesInGroupCounter; i++) {
-
-        }
-
-        // Write unit tests for what you have so far
     }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
@@ -116,6 +99,20 @@ contract FrenBet is Groups {
 
     function getBetsByAddress(address user) public view returns (Bet[] memory) {
         return betsByAddress[user];
+    }
+
+    function getPredictedOutcomesByAddressInGroup(address predictor, uint256 groupId) public view returns (string[] memory) {
+        Bet[] memory allBetsByPredictor = getBetsByAddress(predictor);
+        uint256 numberOfBetsByAddressInGroup = 0;
+        for (uint256 i = 0; i < allBetsByPredictor.length; i++) {
+            if (allBetsByPredictor[i].groupId == groupId) {
+                numberOfBetsByAddressInGroup++;
+            }
+        }
+
+        string[] memory predictedOutcomesByPredictorInGroup = new string[](numberOfBetsByAddressInGroup);
+        
+        return predictedOutcomesByPredictorInGroup;
     }
 
     function getUniqueBetters(uint256 groupId) public returns (address[] memory) {
