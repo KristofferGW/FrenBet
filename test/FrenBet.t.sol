@@ -22,6 +22,7 @@ contract FrenBetTest is Test {
     string[] PREDICTED_OUTCOUMES_12X = ["h", "a", "d"];
     string[] PREDICTED_OUTCOUMES_XX1 = ["d", "d", "h"];
     string[] PREDICTED_OUTCOUMES_1X1 = ["h", "d", "h"];
+    string[] MATCH_RESULTS_1X1 = ["h", "d", "h"];
     address USER1 = makeAddr("User 1");
     address USER2 = makeAddr("User 2");
     address USER3 = makeAddr("User 3");
@@ -65,9 +66,16 @@ contract FrenBetTest is Test {
         assertEq(userHasBetInGroup, false);
     }
 
+    function testCountCorrectPredictionsInSlip() public {
+        uint256 threeCorrectPredictions = frenBet.countCorrectPredictionsInSlip(MATCH_RESULTS_1X1, PREDICTED_OUTCOUMES_1X1);
+        uint256 twoCorrectPredictions = frenBet.countCorrectPredictionsInSlip(MATCH_RESULTS_1X1, PREDICTED_OUTCOUMES_XX1);
+        assertEq(threeCorrectPredictions, 3);
+        assertEq(twoCorrectPredictions, 2);
+    }
+
     function testGetPredictedOutcomesByAddressInGroup() public {
         //Arrange
-        vm.startPrank(USER2);
+        vm.startPrank(USER1);
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
 
         //Act

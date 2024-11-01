@@ -9,12 +9,14 @@ import {Groups} from "./Groups.sol";
 
 contract FrenBet is Groups {
     /* Errors */
+    error FrenBet__PredictorHasNoPredictionsInGroup();
     error FrenBet__GroupAlreadySettled();
     error FrenBet__GroupHasNoBalance();
     error FrenBet__InsufficientUsdc();
     error FrenBet__InvalidGroupId();
     error FrenBet__MismatchedInputs();
     error FrenBet__NoSavedResponseForGroupId();
+    error FrenBet__NumResultsAndNumPredictionsDoNotMatch();
     error FrenBet__UsdcTransferFailed();
 
     /* Contracts */
@@ -91,6 +93,10 @@ contract FrenBet is Groups {
         string[] memory arrayResponse = converters.splitString(stringResponse);
 
         address[] memory uniqueBetters = getUniqueBetters(groupId);
+        uint256 uniqueBettersLength = uniqueBetters.length;
+        for (uint256 i = 0; i < uniqueBettersLength; i++) {
+            string[] memory predictedOutcomesByBetter = getPredictedOutcomesByAddressInGroup(uniqueBetters[i], groupId);
+        }
     }
 
     function betterHasBetInGroup(address better, uint256 groupId) public view returns (bool) {
@@ -101,6 +107,16 @@ contract FrenBet is Groups {
         }
        }
        return false;
+    }
+
+    function countCorrectPredictionsInSlip(string[] calldata results, string[] calldata predictions) public pure returns (uint256 numOfCorrectPredictions) {
+        if (!(results.length == predictions.length)) revert FrenBet__NumResultsAndNumPredictionsDoNotMatch();
+        uint256 resultsLength = results.length;
+        for (uint256 i; i < resultsLength; i++) {
+            if (keccak256(bytes(results[i])) == keccak256(bytes(predictions[i]))) {
+                numOfCorrectPredictions++;
+            }
+        }
     }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
