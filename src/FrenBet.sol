@@ -111,6 +111,13 @@ contract FrenBet is Groups {
         }
 
         string[] memory predictedOutcomesByPredictorInGroup = new string[](numberOfBetsByAddressInGroup);
+        uint256 indexOfBetInNewArray = 0;
+        for (uint256 i = 0; i < allBetsByPredictor.length; i++) {
+            if (allBetsByPredictor[i].groupId == groupId) {
+                predictedOutcomesByPredictorInGroup[indexOfBetInNewArray] = allBetsByPredictor[i].predictedOutcome;
+                indexOfBetInNewArray++;
+            }
+        }
         
         return predictedOutcomesByPredictorInGroup;
     }
