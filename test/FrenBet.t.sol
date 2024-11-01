@@ -52,13 +52,26 @@ contract FrenBetTest is Test {
         vm.stopPrank();
     }
 
+    function testBetterHasBetInGroup() public {
+        vm.startPrank(USER1);
+        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
+        vm.stopPrank();
+        bool userHasBetInGroup = frenBet.betterHasBetInGroup(USER1, TEST_GROUP_ID);
+        assertEq(userHasBetInGroup, true);
+    }
+
+    function testBetterHasNoBetInGroup() public {
+        bool userHasBetInGroup = frenBet.betterHasBetInGroup(USER1, TEST_GROUP_ID);
+        assertEq(userHasBetInGroup, false);
+    }
+
     function testGetPredictedOutcomesByAddressInGroup() public {
         //Arrange
-        vm.startPrank(USER1);
+        vm.startPrank(USER2);
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOUMES_12X);
 
         //Act
-        string[] memory returnedPredictedOutcomes = frenBet.getPredictedOutcomesByAddressInGroup(USER1);
+        string[] memory returnedPredictedOutcomes = frenBet.getPredictedOutcomesByAddressInGroup(USER1, TEST_GROUP_ID);
 
         //Assert
         assertEq(returnedPredictedOutcomes, PREDICTED_OUTCOUMES_12X);

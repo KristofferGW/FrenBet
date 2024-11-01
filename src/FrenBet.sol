@@ -93,6 +93,16 @@ contract FrenBet is Groups {
         address[] memory uniqueBetters = getUniqueBetters(groupId);
     }
 
+    function betterHasBetInGroup(address better, uint256 groupId) public view returns (bool) {
+       uint256 bettersInGroupLength = groups[groupId].betters.length;
+       for (uint256 i; 0 < bettersInGroupLength; i++) {
+        if (groups[groupId].betters[i] == better) {
+            return true;
+        }
+       }
+       return false;
+    }
+
     function getBetById(uint256 betId) public view returns (Bet memory) {
         return betById[betId];
     }
