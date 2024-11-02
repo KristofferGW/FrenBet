@@ -10,11 +10,16 @@ contract Groups {
         address[] betters;
         uint256 groupId;
         bool settled;
+        mapping(address => uint256) betterScores;
     }
 
     mapping(uint256 => Group) public groups; // Mapping to store groups by their unique ID
 
     event GroupCreated(uint256 indexed groupId);
+
+    function addToBetterScoresMapping(uint256 groupId, address better, uint256 score) internal {
+        groups[groupId].betterScores[better] = score;
+    }
 
     function createGroup() public {
         Group storage newGroup = groups[groupCounter];

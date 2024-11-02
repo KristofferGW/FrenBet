@@ -91,11 +91,12 @@ contract FrenBet is Groups {
         bytes memory bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
         string memory stringResponse = converters.bytesToString(bytesResponse);
         string[] memory arrayResponse = converters.splitString(stringResponse);
-
         address[] memory uniqueBetters = getUniqueBetters(groupId);
         uint256 uniqueBettersLength = uniqueBetters.length;
         for (uint256 i = 0; i < uniqueBettersLength; i++) {
             string[] memory predictedOutcomesByBetter = getPredictedOutcomesByAddressInGroup(uniqueBetters[i], groupId);
+            uint256 correctPredictions = countCorrectPredictionsInSlip(arrayResponse, predictedOutcomesByBetter);
+            addToBetterScoresMapping(groupId, uniqueBetters[i], correctPredictions);
         }
     }
 
@@ -109,7 +110,7 @@ contract FrenBet is Groups {
        return false;
     }
 
-    function countCorrectPredictionsInSlip(string[] calldata results, string[] calldata predictions) public pure returns (uint256 numOfCorrectPredictions) {
+    function countCorrectPredictionsInSlip(string[] memory results, string[] memory predictions) public pure returns (uint256 numOfCorrectPredictions) {
         if (!(results.length == predictions.length)) revert FrenBet__NumResultsAndNumPredictionsDoNotMatch();
         uint256 resultsLength = results.length;
         for (uint256 i; i < resultsLength; i++) {
@@ -117,6 +118,7 @@ contract FrenBet is Groups {
                 numOfCorrectPredictions++;
             }
         }
+        return numOfCorrectPredictions;
     }
 
     function getBetById(uint256 betId) public view returns (Bet memory) {
