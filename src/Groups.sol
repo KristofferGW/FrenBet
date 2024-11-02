@@ -35,4 +35,35 @@ contract Groups {
     function getGroupCount() public view returns (uint256) {
         return groupCounter;
     }
+
+    function getTopThreeBetters(uint256 groupId) public view returns (address[3] memory topBetters, uint256[3] memory topScores) {
+        uint256 bettersLength = groups[groupId].betters.length;
+
+        for (uint256 i = 0; i < bettersLength; i++) {
+            address better = groups[groupId].betters[i];
+            uint256 score = groups[groupId].betterScores[better];
+
+            if (score > topScores[0]) {
+                topScores[2] = topScores[1];
+                topBetters[2] = topBetters[1];
+
+                topScores[1] = topScores[0];
+                topBetters[1] = topBetters[0];
+
+                topScores[0] = score;
+                topBetters[0] = better;
+            } else if (score > topScores[1]) {
+                topScores[2] = topScores[1];
+                topBetters[2] = topBetters[1];
+
+                topScores[1] = score;
+                topBetters[1] = better;
+            } else if (score > topScores[2]) {
+                topScores[2] = score;
+                topBetters[2] = better;
+            }
+        }
+
+        return (topBetters, topScores);
+    }
 }
