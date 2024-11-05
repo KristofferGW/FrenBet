@@ -28,14 +28,6 @@ contract Groups {
         emit GroupCreated(newGroup.groupId);
     }
 
-    function getGroupScores(uint256 groupId, address better) public view returns (uint256) {
-        return groups[groupId].betterScores[better];
-    }
-
-    // function getGroupById(uint256 groupId) public view returns (Group memory) {
-    //     return groups[groupId];
-    // }
-
     function getGroupCount() public view returns (uint256) {
         return groupCounter;
     }
