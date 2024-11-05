@@ -17,7 +17,7 @@ contract Groups {
 
     event GroupCreated(uint256 indexed groupId);
 
-    function addToBetterScoresMapping(uint256 groupId, address better, uint256 score) internal {
+    function addToBetterScoresMapping(uint256 groupId, address better, uint256 score) public {
         groups[groupId].betterScores[better] = score;
     }
 
@@ -28,12 +28,33 @@ contract Groups {
         emit GroupCreated(newGroup.groupId);
     }
 
-    function getGroupById(uint256 groupId) public view returns (Group memory) {
-        return groups[groupId];
+    function getGroupScores(uint256 groupId, address better) public view returns (uint256) {
+        return groups[groupId].betterScores[better];
     }
+
+    // function getGroupById(uint256 groupId) public view returns (Group memory) {
+    //     return groups[groupId];
+    // }
 
     function getGroupCount() public view returns (uint256) {
         return groupCounter;
+    }
+
+    function getGroupWithoutMapping(uint256 groupId) public view returns (
+        uint256 balance,
+        uint256[] memory betIds,
+        address[] memory betters,
+        uint256 groupIdOut,
+        bool settled
+    ) {
+        Group storage group = groups[groupId];
+        return (
+            group.balance,
+            group.betIds,
+            group.betters,
+            group.groupId,
+            group.settled
+        );
     }
 
     function getTopThreeBetters(uint256 groupId) public view returns (address[3] memory topBetters, uint256[3] memory topScores) {
