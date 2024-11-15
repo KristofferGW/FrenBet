@@ -8,6 +8,15 @@ contract GroupsTest is Test, Groups {
     Groups testGroups = new Groups();
 
     uint8 FIRST_GROUP_ID = 0;
+    address USER1 = makeAddr("User 1");
+    uint8 EXPECTED_SCORE = 3;
+
+    function testAddToBetterScoresMapping() public {
+        testGroups.createGroup();
+        testGroups.addToBetterScoresMapping(1, USER1, 3);
+        uint256 user1Score = testGroups.getBetterScore(1, USER1);
+        assertEq(user1Score, EXPECTED_SCORE);
+    }
 
     function testCreateGroup() public {
         uint256 groupCountPreCreate = testGroups.getGroupCount();

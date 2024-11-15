@@ -117,6 +117,7 @@ contract FrenBetTest is Test {
         // Act
         (address[3] memory topThreeBetters, uint256[3] memory topThreeScores) = groups.getTopThreeBetters(TEST_GROUP_ID);
 
+
         // Assert
         for (uint256 i = 0; i < topThreeBetters.length; i++) {
             assertEq(topThreeBetters[i], expectedBetters[i]);

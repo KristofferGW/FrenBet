@@ -2,6 +2,8 @@
 pragma solidity ^0.8.25;
 
 contract Groups {
+    error Groups__BettersLengthIsZero();
+
     uint256 public groupCounter;
 
     struct Group {
@@ -51,6 +53,7 @@ contract Groups {
 
     function getTopThreeBetters(uint256 groupId) public view returns (address[3] memory topBetters, uint256[3] memory topScores) {
         uint256 bettersLength = groups[groupId].betters.length;
+        if (!(bettersLength > 0)) revert Groups__BettersLengthIsZero(); 
 
         for (uint256 i = 0; i < bettersLength; i++) {
             address better = groups[groupId].betters[i];
@@ -78,5 +81,9 @@ contract Groups {
         }
 
         return (topBetters, topScores);
+    }
+
+    function getBetterScore(uint256 groupId, address better) public view returns(uint256 score) {
+        return groups[groupId].betterScores[better];
     }
 }
