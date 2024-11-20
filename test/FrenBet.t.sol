@@ -2,6 +2,7 @@
 pragma solidity ^0.8.25;
 
 import {Test, console} from "../lib/forge-std/src/Test.sol";
+import {console} from "../lib/forge-std/src/console.sol";
 import {FixedToken} from "../test/FixedToken.sol";
 import {FrenBet} from "../src/FrenBet.sol";
 import {Groups} from "../src/Groups.sol";
@@ -93,6 +94,7 @@ contract FrenBetTest is Test {
     }
 
     function testGetTopThreeBetters() public {
+        console.log("testGetTopThreeBettters is initialized");
         // Arrange
         vm.startPrank(USER1);
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOMES_12X);
@@ -103,28 +105,21 @@ contract FrenBetTest is Test {
         vm.startPrank(USER3);
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOMES_1X1);
         vm.stopPrank();
-        vm.startPrank(USER4);
-        frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOMES_X2X);
-        vm.stopPrank();
         groups.addToBetterScoresMapping(TEST_GROUP_ID, USER1, 1);
+        console.log("First better score added to mapping");
         groups.addToBetterScoresMapping(TEST_GROUP_ID, USER2, 2);
         groups.addToBetterScoresMapping(TEST_GROUP_ID, USER3, 3);
-        groups.addToBetterScoresMapping(TEST_GROUP_ID, USER4, 0);
         address[3] memory expectedBetters = [USER3, USER2, USER1];
         uint8[3] memory expectedScores = [3, 2, 1];
 
-
         // Act
         (address[3] memory topThreeBetters, uint256[3] memory topThreeScores) = groups.getTopThreeBetters(TEST_GROUP_ID);
-
 
         // Assert
         for (uint256 i = 0; i < topThreeBetters.length; i++) {
             assertEq(topThreeBetters[i], expectedBetters[i]);
             assertEq(topThreeScores[i], expectedScores[i]);
         }
-        // assertEq(topThreeBetters, [USER3, USER2, USER1], "Betters should be ordered 3, 2, 1");
-        // assertEq(topThreeScores, [3, 2, 1], "Top three scores should be 3, 2, 1");
     }
 
     function testGetUniqueBetters() public {

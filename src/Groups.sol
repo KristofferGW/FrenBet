@@ -20,7 +20,11 @@ contract Groups {
     event GroupCreated(uint256 indexed groupId);
 
     function addToBetterScoresMapping(uint256 groupId, address better, uint256 score) public {
-        groups[groupId].betterScores[better] = score;
+        Group storage group = groups[groupId];
+        if (group.betterScores[better] == 0) {
+            group.betters.push(better);
+        }
+        group.betterScores[better] = score;
     }
 
     function createGroup() public {
@@ -53,7 +57,6 @@ contract Groups {
 
     function getTopThreeBetters(uint256 groupId) public view returns (address[3] memory topBetters, uint256[3] memory topScores) {
         uint256 bettersLength = groups[groupId].betters.length;
-        if (!(bettersLength > 0)) revert Groups__BettersLengthIsZero(); 
 
         for (uint256 i = 0; i < bettersLength; i++) {
             address better = groups[groupId].betters[i];
