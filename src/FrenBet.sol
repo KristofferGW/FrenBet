@@ -205,7 +205,7 @@ contract FrenBet is Groups {
         return groupBetters;
     }
 
-    function withdrawRewards() public {
+    function withdrawWinnings() public {
         uint256 winnings = pendingWinnings[msg.sender];
         if (winnings == 0) revert FrenBet__NoWinningsToClaim();
 
