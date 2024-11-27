@@ -10,7 +10,7 @@ import {Groups} from "../src/Groups.sol";
 contract FrenBetTest is Test {
     FixedToken public fakeUSDC;
     FrenBet public frenBet;
-    Groups public groups;
+    Groups public groups = new Groups();
 
     address owner;
     address recipient;
