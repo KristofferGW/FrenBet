@@ -34,7 +34,7 @@ contract FrenBet is Groups {
     mapping(address => Bet[]) public betsByAddress; // Mapping to store bets by user address
     mapping(address => bool) private addressIsUnique; // Used in getUniqueBetters() to find unique addresses
     mapping(address => string[]) private predictedOutcomesByAddress; // Used by settleBets()
-    mapping(address => uint256) public pendingWinnings;
+    mapping(address => uint256) private pendingWinnings;
 
     uint256 uniqueCount = 0;
     IERC20 public usdcToken; // USDC token contract
@@ -128,6 +128,14 @@ contract FrenBet is Groups {
         groups[groupId].settled = true;
 
         emit BetsSettled(groupId, topThreeBetters, [firstPlaceShare, secondPlaceShare, thirdPlaceShare]);
+    }
+
+    // Added for test purposes only. Remove before publishing onchain.
+    function setPendingWinnings(address winner, uint256 amount) public {
+        pendingWinnings[winner] = amount;
+    }
+    function getPendingWinnings(address winner) public returns (uint256) {
+        return pendingWinnings[winner];
     }
 
     function betterHasBetInGroup(address better, uint256 groupId) public view returns (bool) {

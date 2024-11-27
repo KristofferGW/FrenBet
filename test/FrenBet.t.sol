@@ -200,6 +200,23 @@ contract FrenBetTest is Test {
     }
 
     function testWithdrawWinningsSuccess() public {
+        // Arrange
         uint256 winningsAmount = 100 * 10 ** fakeUSDC.decimals();
+        frenBet.setPendingWinnings(USER1, winningsAmount);
+        uint256 userBalanceBefore = fakeUSDC.balanceOf(USER1);
+        fakeUSDC.transfer(address(frenBet), 100 * 10 ** fakeUSDC.decimals());
+
+        // Act
+        vm.prank(USER1);
+        frenBet.withdrawWinnings();
+
+        // Assert
+        uint256 userBalanceAfter = fakeUSDC.balanceOf(USER1);
+        uint256 contractBalanceAfter = fakeUSDC.balanceOf(address(frenBet));
+        uint256 pendingWinningsAfter = frenBet.getPendingWinnings(USER1);
+
+        assertEq(userBalanceAfter, userBalanceBefore + winningsAmount, "Incorrect winnings tranfsered");
+        assertEq(pendingWinningsAfter, 0, "Pending winnings not reset");
+        assertEq(contractBalanceAfter, 100 * 10 ** fakeUSDC.decimals() - winningsAmount, "Contract balance mismatch");
     }
 }
