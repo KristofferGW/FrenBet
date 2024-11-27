@@ -8,6 +8,8 @@ import {FrenBet} from "../src/FrenBet.sol";
 import {Groups} from "../src/Groups.sol";
 
 contract FrenBetTest is Test {
+    error FrenBet__NoWinningsToClaim();
+
     FixedToken public fakeUSDC;
     FrenBet public frenBet;
     Groups public groups = new Groups();
@@ -189,5 +191,15 @@ contract FrenBetTest is Test {
         vm.prank(USER1);
         vm.expectRevert("USDC transfer failed");
         frenBet.placeBets(TEST_GROUP_ID, THREE_MATCH_IDS, PREDICTED_OUTCOMES_12X);
+    }
+
+    function testWithdrawWinningsRevertsWhenNoWinnings() public {
+        vm.prank(USER1);
+        vm.expectRevert(FrenBet__NoWinningsToClaim.selector);
+        frenBet.withdrawWinnings();
+    }
+
+    function testWithdrawWinningsSuccess() public {
+        uint256 winningsAmount = 100 * 10 ** fakeUSDC.decimals();
     }
 }
