@@ -16,6 +16,7 @@ contract FrenBet is Groups {
     error FrenBet__InvalidGroupId();
     error FrenBet__MismatchedInputs();
     error FrenBet__NoSavedResponseForGroupId();
+    error FrenBet__NoWinningsToClaim();
     error FrenBet__NumResultsAndNumPredictionsDoNotMatch();
     error FrenBet__UsdcTransferFailed();
 
@@ -33,6 +34,8 @@ contract FrenBet is Groups {
     mapping(address => Bet[]) public betsByAddress; // Mapping to store bets by user address
     mapping(address => bool) private addressIsUnique; // Used in getUniqueBetters() to find unique addresses
     mapping(address => string[]) private predictedOutcomesByAddress; // Used by settleBets()
+    mapping(address => uint256) public pendingWinnings;
+
     uint256 uniqueCount = 0;
     IERC20 public usdcToken; // USDC token contract
 
@@ -46,6 +49,7 @@ contract FrenBet is Groups {
     }
 
     /* Events */
+    event BetsSettled(uint256 indexed groupId, address[3] indexed topThreeBetters, uint256[3] winnings);
     event BetSlipCreated(address indexed better, uint256 indexed groupId);
     event GroupSettled(uint256 indexed groupId);
 
@@ -88,16 +92,42 @@ contract FrenBet is Groups {
     function settleBets(uint256 groupId) public {
         if (groups[groupId].settled == true) revert FrenBet__GroupAlreadySettled();
         if (groups[groupId].balance == 0) revert FrenBet__GroupHasNoBalance();
+
         bytes memory bytesResponse = functionsConsumer.getResponseByGroupId(groupId);
         string memory stringResponse = converters.bytesToString(bytesResponse);
         string[] memory arrayResponse = converters.splitString(stringResponse);
+
         address[] memory uniqueBetters = getUniqueBetters(groupId);
         uint256 uniqueBettersLength = uniqueBetters.length;
+
         for (uint256 i = 0; i < uniqueBettersLength; i++) {
             string[] memory predictedOutcomesByBetter = getPredictedOutcomesByAddressInGroup(uniqueBetters[i], groupId);
             uint256 correctPredictions = countCorrectPredictionsInSlip(arrayResponse, predictedOutcomesByBetter);
             addToBetterScoresMapping(groupId, uniqueBetters[i], correctPredictions);
         }
+
+        (address[3] memory topThreeBetters,) = getTopThreeBetters(groupId);
+
+        uint256 totalBalance = groups[groupId].balance;
+        uint256 firstPlaceShare = (totalBalance * 50) / 100;
+        uint256 secondPlaceShare = (totalBalance * 30) / 100;
+        uint256 thirdPlaceShare = (totalBalance * 20) / 100;
+
+        if (topThreeBetters[0] != address(0)) {
+            pendingWinnings[topThreeBetters[0]] += firstPlaceShare;
+        }
+        if (topThreeBetters[1] != address(0)) {
+            pendingWinnings[topThreeBetters[1]] += secondPlaceShare;
+        }
+        if (topThreeBetters[2] != address(0)) {
+            pendingWinnings[topThreeBetters[2]] += thirdPlaceShare;
+        }
+
+        groups[groupId].balance -= (firstPlaceShare + secondPlaceShare + thirdPlaceShare);
+
+        groups[groupId].settled = true;
+
+        emit BetsSettled(groupId, topThreeBetters, [firstPlaceShare, secondPlaceShare, thirdPlaceShare]);
     }
 
     function betterHasBetInGroup(address better, uint256 groupId) public view returns (bool) {
@@ -173,5 +203,13 @@ contract FrenBet is Groups {
         }
 
         return groupBetters;
+    }
+
+    function withdrawRewards() public {
+        uint256 winnings = pendingWinnings[msg.sender];
+        if (winnings == 0) revert FrenBet__NoWinningsToClaim();
+
+        pendingWinnings[msg.sender] = 0;
+        usdcToken.transfer(msg.sender, winnings);
     }
 }
