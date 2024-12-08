@@ -130,13 +130,14 @@ contract FrenBet is Groups {
         emit BetsSettled(groupId, topThreeBetters, [firstPlaceShare, secondPlaceShare, thirdPlaceShare]);
     }
 
-    // Added for test purposes only. Remove before publishing onchain.
+    /* Added for test purposes only. Remove before publishing onchain. */ 
     function setPendingWinnings(address winner, uint256 amount) public {
         pendingWinnings[winner] = amount;
     }
-    function getPendingWinnings(address winner) public returns (uint256) {
+    function getPendingWinnings(address winner) public view returns (uint256) {
         return pendingWinnings[winner];
     }
+    /* End functions for test */
 
     function betterHasBetInGroup(address better, uint256 groupId) public view returns (bool) {
        uint256 bettersInGroupLength = groups[groupId].betters.length;
